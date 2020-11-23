@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import dac.Dac;
+
 /**
  * Servlet implementation class Index
  */
@@ -27,7 +29,9 @@ public class Index extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+//		response.getWriter().append("Served at: ").append(request.getContextPath());
+		request.setAttribute("testdac", Dac.getInstance().testDac());
+		request.getRequestDispatcher("/index.jsp").forward(request, response);
 	}
 
 	/**
