@@ -19,6 +19,9 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import model.UpFile;
+import model.Doc;
+
 //import model.A_tuo;
 //import model.TuoCount;
 //import model.TuoCountThreeMonth;
@@ -69,6 +72,108 @@ public final class Dac {
 
 	
 		return tietaList;
+}
+	public List<UpFile> getUpfilesByName(String name) {
+		String sql = "select * from upfiles where name=?";
+		List<UpFile> docList = jdbcTemplate.query(sql, new Object[] { name }, new BeanPropertyRowMapper<UpFile>(UpFile.class));
+		if (docList!=null)
+			return docList;
+		else
+			return null;
+	}
+	public boolean delDoc(String name) {
+		String sql ="delete from docs where name = ?";
+		try {
+			return 1 == jdbcTemplate.update(sql, name);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	public Doc getDoc(String name) {
+		String sql = "select * from docs where name = ?";
+		List<Doc> docList = jdbcTemplate.query(sql, new Object[] { name }, new BeanPropertyRowMapper<Doc>(Doc.class));
+		if (docList.size() >0)
+			return docList.get(0);
+		else
+			return null;
+	}
+	public boolean delUpFile(String name) {
+	String sql = "delete from upfiles where name = ?";
+	String commit="commit";
+
+	try {
+		jdbcTemplate.update(commit);
+		return 1 == jdbcTemplate.update(sql, name);
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+	return false;
+}
+	public void addDoc(final Doc doc) {
+		try {
+			jdbcTemplate.execute(new PreparedStatementCreator() {
+				public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
+//					String sql = propSQL.getProperty("addDoc");
+					String sql = "insert into docs(name,fullname,uploadedtime) values(?,?,?)";
+					return conn.prepareStatement(sql, new String[] { "id" });
+				}
+			}, new PreparedStatementCallback<Integer>() {
+				public Integer doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
+					ps.setString(1, doc.getName());
+					//.println(doc.getName());
+					ps.setString(2, doc.getFullName());
+					//.println(doc.getFullName());
+					ps.setTimestamp(3, doc.getUploadedTime());
+					//.println(doc.getUploadedTime());
+//					ps.setLong(4, doc.getUserId());
+					int ret = ps.executeUpdate();
+					ResultSet rs = ps.getGeneratedKeys();
+					if (rs.next())
+						doc.setId(rs.getLong(1));
+					return ret;
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public void addUpfiles(final UpFile doc) {
+		try {
+			jdbcTemplate.execute(new PreparedStatementCreator() {
+				public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
+//					String sql = propSQL.getProperty("addDoc");
+					String sql = "insert into upfiles(name,file,size,type,zhuanye) values(?,?,?,?,?)";
+					return conn.prepareStatement(sql, new String[] { "id" });
+				}
+			}, new PreparedStatementCallback<Integer>() {
+				public Integer doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
+					ps.setString(1, doc.getName());
+					//.println(doc.getName());
+					ps.setString(2, doc.getFile());
+					//.println(doc.getFullName());
+					ps.setString(3, doc.getSize());
+					//.println(doc.getUploadedTime());
+					ps.setString(4, doc.getType());
+					ps.setString(5, doc.getZhuanye());
+					int ret = ps.executeUpdate();
+					ResultSet rs = ps.getGeneratedKeys();
+					if (rs.next())
+						doc.setId(rs.getLong(1));
+					return ret;
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public List<UpFile> getUpfiles(String zhuanye) {
+	String sql = "select * from upfiles where zhuanye=?";
+	List<UpFile> docList = jdbcTemplate.query(sql, new Object[] { zhuanye }, new BeanPropertyRowMapper<UpFile>(UpFile.class));
+	if (docList!=null)
+		return docList;
+	else
+		return null;
 }
 //	public void addAtuo(A_tuo tieta) {
 //	try {
